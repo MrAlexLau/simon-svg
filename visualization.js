@@ -13,48 +13,63 @@ var drawCircles = function (domSelector) {
         lockedColor: '#2BAD30', // green
         startingRadius: 15,
         outerRadius: 45,
-      };
+      },
+      colorData = [
+        {
+          color: 'yellow',
+          id: 'yellow',
+          x: 0,
+          y: 0,
+          width: SQUARE_WIDTH,
+          height: SQUARE_WIDTH,
+        },
+        {
+          color: 'blue',
+          id: 'blue',
+          x: SQUARE_WIDTH + GUTTER,
+          y: 0,
+          width: SQUARE_WIDTH,
+          height: SQUARE_WIDTH,
+        },
+        {
+          color: 'red',
+          id: 'red',
+          x: 0,
+          y: SQUARE_WIDTH + GUTTER,
+          width: SQUARE_WIDTH,
+          height: SQUARE_WIDTH,
+        },
+        {
+          color: 'green',
+          id: 'green',
+          x: SQUARE_WIDTH + GUTTER,
+          y: SQUARE_WIDTH + GUTTER,
+          width: SQUARE_WIDTH,
+          height: SQUARE_WIDTH,
+        }
+      ];
 
   svg = d3.select(domSelector)
     .append('svg')
     .attr('height', options.outerRadius * 2)
     .attr('width', options.outerRadius * 2);
 
-  yellowSquare = svg.append('rect')
-      .attr('y', 0)
-      .attr('x', 0)
-      .attr('width', SQUARE_WIDTH)
-      .attr('height', SQUARE_WIDTH)
+  squares = svg.selectAll('rect.color')
+      .data(colorData)
+      .enter()
+      .append('rect')
+      .attr('y', function(d) { return d.y; })
+      .attr('x', function(d) { return d.x; })
+      .attr('data-color', function(d) { return d.id; })
+      .attr('width', function(d) { return d.width; })
+      .attr('height', function(d) { return d.height; })
       .attr("stroke-width", '1')
       .attr("stroke", 'black')
-      .style('fill', 'yellow');
+      .style('fill', function(d) { return d.color; });
 
-  blueSquare = svg.append('rect')
-      .attr('y', 0)
-      .attr('x', SQUARE_WIDTH + GUTTER)
-      .attr('width', SQUARE_WIDTH)
-      .attr('height', SQUARE_WIDTH)
-      .attr("stroke-width", '1')
-      .attr("stroke", 'black')
-      .style('fill', 'blue');
-
-  redSquare = svg.append('rect')
-      .attr('y', SQUARE_WIDTH + GUTTER)
-      .attr('x', 0)
-      .attr('width', SQUARE_WIDTH)
-      .attr('height', SQUARE_WIDTH)
-      .attr("stroke-width", '1')
-      .attr("stroke", 'black')
-      .style('fill', 'red');
-
-  greenSquare = svg.append('rect')
-      .attr('y', SQUARE_WIDTH + GUTTER)
-      .attr('x', SQUARE_WIDTH + GUTTER)
-      .attr('width', SQUARE_WIDTH)
-      .attr('height', SQUARE_WIDTH)
-      .attr("stroke-width", '1')
-      .attr("stroke", 'black')
-      .style('fill', 'green');
+  squares.on('click', function(squareData) {
+    console.log(squareData.id);
+  });
 
   // whitespaceCircle = svg.append('circle')
   //     .attr('class', 'locked-on-circle')
