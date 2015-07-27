@@ -1,13 +1,15 @@
-var drawCircles = function (domSelector) {
+var initGame = function (domSelector) {
   var svg,
-      whitespaceCircle,
       yellowSquare,
       blueSquare,
       redSquare,
       greenSquare,
-      isLocked,
+      gameOver = false,
       SQUARE_WIDTH = 40,
       GUTTER = 5,
+      sequence = [],
+      tilesClicked = 0,
+      ANIMATION_DURATION = 500, // in milliseconds
       options = {
         defaultColor: '#303030', // dark gray
         lockedColor: '#2BAD30', // green
@@ -54,86 +56,81 @@ var drawCircles = function (domSelector) {
     .attr('height', options.outerRadius * 2)
     .attr('width', options.outerRadius * 2);
 
-  squares = svg.selectAll('rect.color')
+  squares = svg.selectAll('rect.square')
       .data(colorData)
       .enter()
       .append('rect')
+      .attr('class', function(d) { return "square square-" + d.id; })
       .attr('y', function(d) { return d.y; })
       .attr('x', function(d) { return d.x; })
-      .attr('data-color', function(d) { return d.id; })
+      .attr('data-color-id', function(d) { return d.id; })
       .attr('width', function(d) { return d.width; })
       .attr('height', function(d) { return d.height; })
       .attr("stroke-width", '1')
       .attr("stroke", 'black')
       .style('fill', function(d) { return d.color; });
 
+  var animateSquare = function (el, delay) {
+    setTimeout(function () {
+      if (!gameOver) {
+        el.style('opacity', 0.5);
+      }
+    }, delay);
+
+    setTimeout(function () {
+      el.style('opacity', 1);
+    }, delay + ANIMATION_DURATION);
+  };
+
+
+  var playSequence = function () {
+    var squares = svg.selectAll('rect.square'),
+        nextSquare = _.sample(squares[0]);
+    sequence = sequence.concat(nextSquare);
+
+    var timer = ANIMATION_DURATION;
+
+    for(var i = 0; i < sequence.length; i++) {
+      var el = d3.select(sequence[i]);
+      animateSquare(el, timer);
+      var TIME_BETWEEN_ANIMATIONS = 500;
+      timer += (ANIMATION_DURATION + TIME_BETWEEN_ANIMATIONS);
+    }
+  };
+
   squares.on('click', function(squareData) {
-    console.log(squareData.id);
+    var el = d3.select(this);
+
+    // clear out previous animations
+    svg.selectAll('rect.square').style('opacity', 1);
+
+    animateSquare(el, 0);
+    tilesClicked += 1;
+
+    sequenceComplete = (tilesClicked == sequence.length);
+
+    // check if the tile clicked was the right one
+    if (squareData.id !== $(sequence[tilesClicked - 1]).data('color-id')) {
+      $('.game-over').show();
+      $('.start-trigger').show();
+      gameOver = true;
+    }
+    else if (sequenceComplete) {
+      // animate the next sequence
+      setTimeout(playSequence, ANIMATION_DURATION);
+      tilesClicked = 0;
+    }
   });
 
-  // whitespaceCircle = svg.append('circle')
-  //     .attr('class', 'locked-on-circle')
-  //     .attr('cy', options.outerRadius)
-  //     .attr('cx', options.outerRadius)
-  //     .attr('r', options.outerRadius - 5)
-  //     .style('fill', '#FFFFFF');
+  $('.start-trigger').on('click', function() {
+    $('.start-trigger').hide();
+    sequence = [];
+    tilesClicked = 0;
+    gameOver = false;
 
-  // loadingCircle = svg.append('circle')
-  //   .attr('r', options.startingRadius)
-  //   .attr('cy', options.outerRadius)
-  //   .attr('cx', options.outerRadius)
-  //   .attr('fill', options.defaultColor);
+    $('.game-over').hide();
 
-  // svg.on('mouseenter', function () {
-  //   if (isLocked) {
-  //     return;
-  //   }
-
-  //   isLocked = false;
-
-  //   loadingCircle
-  //     .transition()
-  //     .attr('fill', options.lockedColor)
-  //     .attr('r', options.outerRadius - 10)
-  //     .ease('back')
-  //     .duration(1500)
-  //     .each('end', function () {
-  //       isLocked = true;
-
-  //       outerCircle
-  //         .style('fill', options.lockedColor);
-
-  //       $('.notification').fadeIn(500);
-  //     });
-
-  //   loadingCircle
-  //     .transition()
-  //     .delay(1550)
-  //     .attr('fill', options.lockedColor)
-  //     .duration(10);
-  // });
-
-  // svg.on('mouseleave', function () {
-  //   if (!isLocked) {
-  //     isLocked = false;
-
-  //     loadingCircle
-  //       .transition()
-  //       .attr('r', 15)
-  //       .attr('fill', options.defaultColor);
-  //   }
-  // });
-
-  // $('.reset').click(function () {
-  //   isLocked = false;
-  //   outerCircle
-  //     .style('fill', options.defaultColor);
-
-  //   loadingCircle
-  //     .attr('r', 15)
-  //     .attr('fill', options.defaultColor);
-
-  //   $('.notification').hide();
-  // });
+    playSequence();
+  });
 };
 

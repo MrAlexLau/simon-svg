@@ -4,12 +4,21 @@
   <meta charset="utf-8">
     <script src="./d3.min.js"></script>
     <script src="./jquery-2.1.4.min.js"></script>
+    <script src="./underscore-min.js"></script>
     <script src="./visualization.js"></script>
     <style>
       .notification {
         display: none;
         text-align: center;
         width: 90px;
+      }
+
+      .flash {
+        opacity: 0.5;
+      }
+
+      .game-over {
+        display: none;
       }
 
       svg {
@@ -23,12 +32,11 @@
   </head>
   <body>
     <div id="a-container"></div>
-    <div class="notification">
-      <p>done!</p>
-      <a href="#" class="reset">play it again?</a>
-    </div>
+    <div class="game-over">Game Over</div>
+    <a href="#" class="start-trigger">Start</a>
+
     <script>
-      drawCircles("#a-container");
+      initGame("#a-container");
     </script>
   </body>
 </html>
